@@ -3,27 +3,31 @@
 
 {% block title %}Royal Hotels{% endblock %}
 
-{% block header %}Product Details Page{% endblock %}
+{% block header %}Product Details:{% endblock %}
 
 {% block content %}
 
 
 <div class="admin_panel">
-    <form name="productForm" method="POST" action = "../details/"> 
-      <table>
-        {% csrf %} # must use this cross site request forgery protection with forms.
-        {{form.non_field_errors}} # variable as indicated by {{}}. The "." accesses attribute "non_field_error"
-        # which means if there are any errors not relating to specific fields display them in the table.
-        {{form.as_table}} # as_table attribute renders form as table.
-      </table>
-      <div class="frmBtn_container"> <!--frm means "form"--> 
-        <ul>
-          <li><a href="../{{ form.pk }}delete/"> DELETE</a> </li>
-          <li><a href="{% url 'admin_console' %}">CANCEL</a> </li>
-        </ul>
-      </div>
-
+    <!--action = on submit send the form data to a file named ../details/ to process input-->
+    <form method="POST" id="thisForm" action="../details/">
+        <table>
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            {{ form.as_table }}
+        </table>
+        <div class="frmBtn_container">
+            <!--creates a button with Submit-->
+            <input type="submit">
+            <div class="frmBtn_container">
+                <!--pass in variable "form.pk" to the delete page.-->
+                <button class="btn"><a href="../{{ form.pk }}delete/">DELETE</a></button>
+                <button class="btn"><a href="{% url 'admin_console' %}">Cancel</a></button>
+            </div>
+        </div>
     </form>
 </div>
+
+
 
 {% endblock %}

@@ -1,8 +1,9 @@
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
-from . import views
-from .models import Product # from models.py import Product (that we made)
-from .forms import ProductForm # from forms.py import ProductForm
+from .forms import ProductForm
+from .models import Product
+
 
 
 def admin_console(request):
@@ -10,18 +11,55 @@ def admin_console(request):
     return render(request, 'products/products_page.html', {'products': products})
 
 
-def details(request, pk): # pass in user request and PK which got when user clicked on product from drop down
-    # menu
-    pk = int(pk) # change primary key from string in to integer.
-    item = get_object_or_404(Product, pk=pk) # gets the product with certain pk, or gives 404 message to user
-    form = ProductForm(data=request.POST or None, instance=item) # puts the specific item into the form.
+def details(request, pk):
+    pk = int(pk)
+    item = get_object_or_404(Product, pk=pk)
+    form = ProductForm(data=request.POST or None, instance=item)
+    # POST is request to the dB that server accepts data in form. This is when user
+    # changes the fields in the product.
     if request.method == 'POST':
-        if form.is_valid(): # this method runs validation on all fields.
-            form2 = form.save(commit=False) # create form2 but don't save the new form instance.
+        if form.is_valid():
+            form2 = form.save(commit=False)
+            # save new details to dB
             form2.save()
-            return redirect('admin-console')
+            return redirect('admin_console')
         else:
-            print(form.errors) # print error message to screen.
+            print(form.errors)
     else:
-        return render(request, 'products/present_product.html', {'form': form}) # render the products page with
-    # the dictionary items
+        return render(request, 'products/present_product.html', {'form': form})
+
+
+def delete(request, pk):
+    pk = int(pk)
+    item = get_object_or_404(Product, pk=pk)
+    if request.method == 'POST':
+        item.delete()
+        return redirect('admin_console')
+    context = {"item": item,}
+    return render(request, "products/confirmDelete.html", context)
+
+
+def confirmed(request):
+    if request.method == 'POST':
+        # creates form instance and binds data to it
+        form = ProductForm(request.POST or None)
+        if form.is_valid():
+            form.delete()
+            return redirect('admin_console')
+    else:
+        return redirect('admin_console')
+
+
+def createRecord(request):
+    form = ProductForm(request.POST or None)
+    if form.is_valid():
+        form.save()
+        return redirect('admin_console')
+    else:
+        print(form.errors)
+        # ProductForm() creates empty version of form.
+        form = ProductForm()
+    context = {
+        'form': form,
+    }
+    return render(request, 'products/createRecord.html', context)
